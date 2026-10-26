@@ -12,19 +12,7 @@ forecasts together for one token at a time.
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    CMC[(Historical daily data<br/>CoinMarketCap export)] -->|training only| EXP[Experiments<br/>notebooks, Optuna, models]
-    EXP -->|trained models| P
-    K[Kraken public API<br/>live daily OHLC] -->|prediction only| P
-    subgraph P[Four FastAPI services]
-        A[Asset Performance Index<br/>XGBoost regressor]
-        B[Market Risk Index<br/>LightGBM regressor]
-        C[Trend Category<br/>XGBoost classifier]
-        D[Trading Opportunity Rating<br/>LightGBM classifier]
-    end
-    P -->|/predict, /features, /model-metadata| S[Streamlit app]
-```
+![Tokenometrics architecture: experiments, four FastAPI services on Render and the Streamlit frontend](images/architecture.png)
 
 - **Training data:** historical daily open, high, low, close, volume and market
   cap for each token. Models are trained on this data only.
@@ -33,6 +21,47 @@ flowchart LR
 - **Shared code:** a small internal Python package holds the data access and
   feature formulas, so the notebooks and all four services compute features
   the same way.
+
+## The app
+
+Pick a token at the top and every chart and forecast follows it. Shown here
+for XRP.
+
+### Markets
+
+The latest price, 7-day, 30-day and 1-year change, a price chart, and one
+engineered-feature chart from each service.
+
+![Markets page](images/app-markets.png)
+
+### Asset Performance Index
+
+A 0–100 performance score for 7 days ahead, the model's feature importance,
+the 20-day return history and the features this service owns.
+
+![Asset Performance Index page](images/app-asset-performance-index.png)
+
+### Market Risk Index
+
+A 0–100 risk score for 7 days ahead, feature importance, the moving-average
+history, and every input the model received, including those fetched from
+the other services.
+
+![Market Risk Index page](images/app-market-risk-index.png)
+
+### Trend Category
+
+The predicted trend class with its confidence, feature importance, and the
+volatility and drawdown history.
+
+![Trend Category page](images/app-trend-category.png)
+
+### Trading Opportunity Rating
+
+A Strong Sell to Strong Buy recommendation with its confidence, feature
+importance, and the relative volume history.
+
+![Trading Opportunity Rating page](images/app-trading-opportunity-rating.png)
 
 ## Projects
 
